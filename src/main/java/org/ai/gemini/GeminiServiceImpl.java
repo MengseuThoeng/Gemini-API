@@ -62,6 +62,7 @@ public class GeminiServiceImpl implements GeminiService {
             case "true/false" -> generateTrueFalsePrompt(request);
             case "multiple choice" -> generateMultipleChoicePrompt(request);
             case "fill-in-the-blank" -> generateFillInTheBlankPrompt(request);
+            case "question" -> generateQuestionPrompt(request);
             default -> throw new IllegalArgumentException("Unknown question type: " + request.questionType());
         };
     }
@@ -92,6 +93,15 @@ public class GeminiServiceImpl implements GeminiService {
                 request.difficultyLevel()
         );
     }
+    private String generateQuestionPrompt(GeminiRequest request) {
+        return String.format(
+                "Generate %s questions on %s (difficulty: %s). Format as JSON: {\"questions\":[{\"question\":\"<text>\"}]}",
+                request.numberOfQuestions(),
+                request.subject(),
+                request.difficultyLevel()
+        );
+    }
+
 
     private String extractTextFromJson(String responseBody) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
