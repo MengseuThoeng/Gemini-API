@@ -10,10 +10,19 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: '21'
+            java-version: '21'
+            distribution: 'adopt'
+            java-package: jdk
+            architecture: x64
+            check-latest: false
+            server-id: github
+            server-username: ${{ github.actor }}  # Use ${{ github.actor }} to get the GitHub username
+            server-password: ${{ secrets.GITHUB_TOKEN }}
+            overwrite-settings: true
+            job-status: success
 
       - name: Build with Gradle
         run: ./gradlew build
