@@ -27,6 +27,9 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build --stacktrace
 
+      - name: Run tests with Gradle (ignoring failures)
+        run: ./gradlew test --stacktrace -x test
+
       - name: Run tests with Gradle
         run: ./gradlew test --stacktrace
 
@@ -75,3 +78,8 @@ jobs:
         with:
           name: coverage-report
           path: build/reports/jacoco/test
+
+      - name: Upload build scan
+        if: failure()
+        run: ./gradlew --scan -Dscan.uploadInBackground=false
+
