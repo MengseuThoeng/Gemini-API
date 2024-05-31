@@ -10,19 +10,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      # Add this step to set permissions for gradlew script
+      - name: Set execute permissions for gradlew
+        run: chmod +x ./gradlew
+
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-            java-version: '21'
-            distribution: 'adopt'
-            java-package: jdk
-            architecture: x64
-            check-latest: false
-            server-id: github
-            server-username: ${{ github.actor }}  # Use ${{ github.actor }} to get the GitHub username
-            server-password: ${{ secrets.GITHUB_TOKEN }}
-            overwrite-settings: true
-            job-status: success
+          java-version: '21'
+          distribution: 'adopt'
+          java-package: jdk
+          architecture: x64
+          check-latest: false
+          server-id: github
+          server-username: ${{ github.actor }}  # Use ${{ github.actor }} to get the GitHub username
+          server-password: ${{ secrets.GITHUB_TOKEN }}
+          overwrite-settings: true
+          job-status: success
 
       - name: Build with Gradle
         run: ./gradlew build
