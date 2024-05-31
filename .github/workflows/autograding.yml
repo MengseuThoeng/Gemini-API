@@ -1,57 +1,77 @@
-name: Autograding
+name: Autograde project
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
-  autograde:
+  grade-project:
+    name: Autograde project
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      # Add this step to set permissions for gradlew script
-      - name: Set execute permissions for gradlew
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          check-latest: true
+
+      - name: Grant execute permission for Gradle wrapper
         run: chmod +x ./gradlew
 
-      - name: Set up JDK
-        uses: actions/setup-java@v2
-        with:
-          java-version: '21'
-          distribution: 'adopt'
-          java-package: jdk
-          architecture: x64
-          check-latest: false
-          server-id: github
-          server-username: ${{ github.actor }}  # Use ${{ github.actor }} to get the GitHub username
-          server-password: ${{ secrets.GITHUB_TOKEN }}
-          overwrite-settings: true
-          job-status: success
-
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew build --stacktrace
 
-      - name: Run tests
-        run: ./gradlew test
+      - name: Run tests with Gradle
+        run: ./gradlew test --stacktrace
 
-      - name: Generate Coverage Report
-        run: ./gradlew jacocoTestReport
+      - name: Generate JaCoCo test coverage report
+        run: ./gradlew jacocoTestReport --stacktrace
 
-      - name: Autograde
+      - name: Extract pull request number
+        uses: jwalton/gh-find-current-pr@v1
+        id: pr
+
+      - name: Run Autograding
         uses: uhafner/autograding-github-action@v3
         with:
-          github-token: ${{ secrets.MY_GITHUB_TOKEN }}
-          config: |
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pr-number: ${{ steps.pr.outputs.number }}
+          checks-name: "Autograding GitHub Action"
+          config: > # Override default configuration: just grade the test results
             {
-              "checks": {
-                "coverage": {
-                  "max-coverage": 80,
-                  "report-file": "build/reports/jacoco/test/jacocoTestReport.xml"
-                }
+              "tests": {
+                "tools": [
+                  {
+                    "id": "test",
+                    "name": "Unittests",
+                    "pattern": "**/build/test-results/test/*.xml"
+                  }
+                ],
+                "name": "JUnit",
+                "skippedImpact": -1,
+                "failureImpact": -5,
+                "maxScore": 100
+              },
+              "coverage": {
+                "max-coverage": 80,
+                "report-file": "build/reports/jacoco/test/jacocoTestReport.xml"
               }
             }
-          checks-name: "Autograding Check"
-          pr-number: ${{ github.event.pull_request.number }}
-          skip-annotations: "false"
-          max-warning-annotations: 10
-          max-coverage-annotations: 5
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: build/reports/tests/test
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: build/reports/jacoco/test
