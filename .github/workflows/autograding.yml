@@ -25,13 +25,13 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build --stacktrace --info
+        run: ./gradlew build --stacktrace
 
       - name: Run tests with Gradle
-        run: ./gradlew test --stacktrace --info
+        run: ./gradlew test --stacktrace
 
       - name: Generate JaCoCo test coverage report
-        run: ./gradlew jacocoTestReport --stacktrace --info
+        run: ./gradlew jacocoTestReport --stacktrace
 
       - name: Extract pull request number
         uses: jwalton/gh-find-current-pr@v1
@@ -75,14 +75,3 @@ jobs:
         with:
           name: coverage-report
           path: build/reports/jacoco/test
-
-      - name: Upload build scan
-        if: failure()
-        run: ./gradlew --scan -Dscan.uploadInBackground=false
-
-      - name: Upload build logs
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-logs
-          path: build/reports
