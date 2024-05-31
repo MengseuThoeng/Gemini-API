@@ -43,26 +43,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           pr-number: ${{ steps.pr.outputs.number }}
           checks-name: "Autograding GitHub Action"
-          config: > # Override default configuration: just grade the test results
-            {
-              "tests": {
-                "tools": [
-                  {
-                    "id": "test",
-                    "name": "Unittests",
-                    "pattern": "**/build/test-results/test/*.xml"
-                  }
-                ],
-                "name": "JUnit",
-                "skippedImpact": -1,
-                "failureImpact": -5,
-                "maxScore": 100
-              },
-              "coverage": {
-                "max-coverage": 80,
-                "report-file": "build/reports/jacoco/test/jacocoTestReport.xml"
-              }
-            }
 
       - name: Upload test report
         uses: actions/upload-artifact@v3
